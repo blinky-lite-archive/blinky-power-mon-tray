@@ -235,16 +235,16 @@
         "tcpType": "DEFAULT",
         "serialPort": "$(SERIALPORT)",
         "serialType": "RTU-BUFFERD",
-        "serialBaudrate": "19200",
+        "serialBaudrate": "9600",
         "serialDatabits": "8",
         "serialStopbits": "1",
         "serialParity": "none",
         "serialConnectionDelay": "100",
         "unit_id": "1",
         "commandDelay": "1",
-        "clientTimeout": "1000",
+        "clientTimeout": "5000",
         "reconnectOnTimeout": false,
-        "reconnectTimeout": "2000",
+        "reconnectTimeout": "10000",
         "parallelUnitIdsAllowed": false
     },
     {
@@ -1518,9 +1518,7 @@
         "x": 130,
         "y": 640,
         "wires": [
-            [
-                "b5aa124df51a8d82"
-            ]
+            []
         ]
     },
     {
@@ -1682,7 +1680,7 @@
         "type": "function",
         "z": "731de46a.7645fc",
         "name": "Read Modbus",
-        "func": "var modeBusCommand = { 'fc': 0x3, 'unitid': 1, 'address': 0 , 'quantity': 4 } ;\nreturn {topic: \"readStatus\", payload:modeBusCommand};\n",
+        "func": "var modeBusCommand = { 'fc': 0x3, 'unitid': 1, 'address': 0 , 'quantity': 16 } ;\nreturn {topic: \"readStatus\", payload:modeBusCommand};\n",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -1732,7 +1730,7 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 750,
+        "x": 730,
         "y": 40,
         "wires": []
     },

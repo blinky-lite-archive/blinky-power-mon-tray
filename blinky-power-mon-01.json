@@ -1,5 +1,5 @@
 {
-  "deviceType": "blinky-modbus",
+  "deviceType": "blinky-power-mon",
   "name": "01",
   "arcPeriod": 60000,
   "timeStamp": 1634109573209,
