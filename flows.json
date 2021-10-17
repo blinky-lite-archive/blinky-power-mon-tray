@@ -622,7 +622,7 @@
         "overwriteFile": "true",
         "encoding": "none",
         "x": 1370,
-        "y": 360,
+        "y": 340,
         "wires": [
             []
         ]
@@ -639,7 +639,7 @@
         "finalize": "",
         "libs": [],
         "x": 1180,
-        "y": 360,
+        "y": 340,
         "wires": [
             [
                 "168ce872.83d788"
@@ -829,7 +829,7 @@
         "type": "function",
         "z": "85e21fcb925ef32f",
         "name": "Create Readings",
-        "func": "var device = flow.get('device');\nif (msg.payload[0] != Number(device.name)) return [null,{topic:'badCubeData', payload:true}];\nvar powerArray = context.get('powerArray');\nif ((msg.payload[4] == 2) && (msg.payload[5] == 2)) return  [null, {topic:'badCubeRead', payload:true}];\nif (msg.payload[1] < 10000) return  [null, {topic:'badHallRead', payload:true}];\n\ndevice.power.value = 4800.0 * msg.payload[2] / msg.payload[1];\npowerArray.push(device.power.value);\nif (powerArray.length > 1000) powerArray.shift();\ndevice.powerAvg.value = 0.0;\nvar powerMax = 0.0;\nfor (var ii = 0; ii < powerArray.length; ++ii)\n{\n    device.powerAvg.value = device.powerAvg.value + powerArray[ii];\n    if (powerMax < powerArray[ii]) powerMax = powerArray[ii];\n}\ndevice.powerAvg.value = device.powerAvg.value / powerArray.length;\ndevice.dutyFactor.value = 100.0 * device.powerAvg.value / powerMax;\n\ndevice.powerRms.value = 0.0;\nfor (var ii = 0; ii < powerArray.length; ++ii)\n{\n    device.powerRms.value = device.powerRms.value + (powerArray[ii] - device.powerAvg.value) * (powerArray[ii] - device.powerAvg.value);\n}\ndevice.powerRms.value = Math.sqrt(device.powerRms.value / powerArray.length);\n\ndevice.power.value = Math.round(10 * device.power.value) / 10;\ndevice.powerAvg.value = Math.round(10 * device.powerAvg.value) / 10;\ndevice.powerRms.value = Math.round(10 * device.powerRms.value) / 10;\ndevice.dutyFactor.value = Math.round(10 * device.dutyFactor.value) / 10;\n\ndevice.vbat.value = 2 * 3.3 * msg.payload[3] / 1024;\ndevice.vbat.value = Math.round(100 * device.vbat.value) / 100;\n\ndevice.interlock.value = 0;\ndevice.temperature.value  = 0;\ndevice.lora.value = -msg.payload[7];\n//node.warn(device);\nreturn  [{topic:'newSettingDone', payload:true},null];\n",
+        "func": "var device = flow.get('device');\nif (msg.payload[0] != Number(device.name)) return [null,{topic:'badCubeData', payload:true}];\nvar powerArray = context.get('powerArray');\nif ((msg.payload[4] == 2) && (msg.payload[5] == 2)) return  [null, {topic:'badCubeRead', payload:true}];\nif (msg.payload[1] < 10000) return  [null, {topic:'badHallRead', payload:true}];\n\ndevice.power.value = 4800.0 * msg.payload[2] / msg.payload[1];\npowerArray.push(device.power.value);\nif (powerArray.length > device.avgSamples.value) powerArray.shift();\ndevice.powerAvg.value = 0.0;\nvar powerMax = 0.0;\nfor (var ii = 0; ii < powerArray.length; ++ii)\n{\n    device.powerAvg.value = device.powerAvg.value + powerArray[ii];\n    if (powerMax < powerArray[ii]) powerMax = powerArray[ii];\n}\ndevice.powerAvg.value = device.powerAvg.value / powerArray.length;\ndevice.dutyFactor.value = 100.0 * device.powerAvg.value / powerMax;\n\ndevice.powerRms.value = 0.0;\nfor (var ii = 0; ii < powerArray.length; ++ii)\n{\n    device.powerRms.value = device.powerRms.value + (powerArray[ii] - device.powerAvg.value) * (powerArray[ii] - device.powerAvg.value);\n}\ndevice.powerRms.value = Math.sqrt(device.powerRms.value / powerArray.length);\n\ndevice.power.value = Math.round(10 * device.power.value) / 10;\ndevice.powerAvg.value = Math.round(10 * device.powerAvg.value) / 10;\ndevice.powerRms.value = Math.round(10 * device.powerRms.value) / 10;\ndevice.dutyFactor.value = Math.round(10 * device.dutyFactor.value) / 10;\n\ndevice.vbat.value = 2 * 3.3 * msg.payload[3] / 1024;\ndevice.vbat.value = Math.round(100 * device.vbat.value) / 100;\n\ndevice.interlock.value = 0;\ndevice.temperature.value  = 0;\ndevice.lora.value = -msg.payload[7];\n//node.warn(device);\nreturn  [{topic:'newSettingDone', payload:true},null];\n",
         "outputs": 2,
         "noerr": 0,
         "initialize": "// Code added here will be run once\n// whenever the node is started.\ncontext.set('powerArray',[]);\n",
@@ -1525,6 +1525,11 @@
         "rules": [
             {
                 "t": "eq",
+                "v": "setting",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
                 "v": "ping",
                 "vt": "str"
             },
@@ -1541,10 +1546,13 @@
         ],
         "checkall": "true",
         "repair": false,
-        "outputs": 3,
+        "outputs": 4,
         "x": 650,
         "y": 160,
         "wires": [
+            [
+                "a1c47b3dde2f9301"
+            ],
             [
                 "91cded1b31446957"
             ],
@@ -2155,7 +2163,12 @@
             "6af21e76e0c4ad80",
             "86aff585d6d97f09",
             "df03212a7e41deb1",
-            "0bf699584a2609d5"
+            "0bf699584a2609d5",
+            "4b0382a31bcb8ddd",
+            "a1464d257bbcec23",
+            "0579389b3a09a42f",
+            "78a9f756f5e301d0",
+            "fc2aaff0224c1204"
         ],
         "x": 915,
         "y": 180,
@@ -2186,7 +2199,7 @@
             "45a97566b65c65cc"
         ],
         "x": 755,
-        "y": 140,
+        "y": 160,
         "wires": []
     },
     {
@@ -2218,7 +2231,7 @@
             "720ccfb4b4949146"
         ],
         "x": 755,
-        "y": 180,
+        "y": 200,
         "wires": []
     },
     {
@@ -2331,10 +2344,14 @@
         "name": "Save Settings to file in",
         "links": [
             "6af21e76e0c4ad80",
-            "501090a1fd5f88f5"
+            "501090a1fd5f88f5",
+            "a1464d257bbcec23",
+            "4b0382a31bcb8ddd",
+            "78a9f756f5e301d0",
+            "fc2aaff0224c1204"
         ],
         "x": 1035,
-        "y": 360,
+        "y": 340,
         "wires": [
             [
                 "89892a30.598e28"
@@ -2469,7 +2486,7 @@
             "6c366c9b4d8b8f19"
         ],
         "x": 755,
-        "y": 220,
+        "y": 240,
         "wires": []
     },
     {
@@ -2828,5 +2845,255 @@
                 "f6ab8485.5f47e8"
             ]
         ]
+    },
+    {
+        "id": "a1c47b3dde2f9301",
+        "type": "link out",
+        "z": "85e21fcb925ef32f",
+        "name": "New Setting In",
+        "links": [
+            "f7b49bc617e70742"
+        ],
+        "x": 755,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "f7b49bc617e70742",
+        "type": "link in",
+        "z": "85e21fcb925ef32f",
+        "name": "Modbus setting in",
+        "links": [
+            "4493527757138cdc",
+            "a1c47b3dde2f9301"
+        ],
+        "x": 55,
+        "y": 340,
+        "wires": [
+            [
+                "da992510655e255e"
+            ]
+        ]
+    },
+    {
+        "id": "da992510655e255e",
+        "type": "function",
+        "z": "85e21fcb925ef32f",
+        "name": "Create Setting",
+        "func": "var device = flow.get('device');\nvar modbusSettingMsg = \n{\n    topic : msg.topic, \n    payload : { value: msg.payload.value, 'fc': 0x6, 'unitid': 1, 'address': -1 , 'quantity': 1 } \n}\nvar modbusMessage = false;\nswitch(msg.payload.attr)\n{\n    case 'testModbus':\n        modbusSettingMsg.payload.address = 0;\n        modbusMessage = true;\n        break;\n    case 'avgSamples':\n        device.avgSamples.value  = msg.payload.value;\n        modbusMessage = false;\n        break;\n    default:\n        break;\n}\nvar msgArray = [null,null,null];\nif (modbusMessage)\n{\n    device.settingInProgress = 1;\n    var settingInProgressMsg = {topic:'settingInProgress', payload:true};\n    msgArray = [modbusSettingMsg, settingInProgressMsg, null];\n    \n}\nelse\n{\n    device.settingInProgress = 0;\n    msgArray = [null,null,{topic:'settingDone', payload:true}];\n}\nreturn msgArray;",
+        "outputs": 3,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 180,
+        "y": 340,
+        "wires": [
+            [
+                "96eeb6486dcb5612"
+            ],
+            [
+                "0579389b3a09a42f"
+            ],
+            [
+                "fc2aaff0224c1204"
+            ]
+        ]
+    },
+    {
+        "id": "783692f6378d4267",
+        "type": "modbus-flex-write",
+        "z": "85e21fcb925ef32f",
+        "name": "local setter flex",
+        "showStatusActivities": false,
+        "showErrors": false,
+        "server": "54dde46e.53267c",
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": false,
+        "x": 560,
+        "y": 340,
+        "wires": [
+            [],
+            [
+                "ee19ba416740ccfb"
+            ]
+        ]
+    },
+    {
+        "id": "ee19ba416740ccfb",
+        "type": "function",
+        "z": "85e21fcb925ef32f",
+        "name": "Check Modbus Setting",
+        "func": "device = flow.get('device');\ndevice.settingInProgress = 0;\nswitch(msg.payload.address)\n{\n    case 0:\n        device.led0.value = msg.payload.value;\n        break;\n    case 1:\n        device.led1.value = msg.payload.value;\n        break;\n    case 2:\n        device.led2.value = msg.payload.value;\n        break;\n    case 3:\n        device.led3.value = msg.payload.value;\n        break;\n    default:\n        break;\n}\nreturn {topic:'settingCompleted', payload:true};",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 780,
+        "y": 340,
+        "wires": [
+            [
+                "78a9f756f5e301d0"
+            ]
+        ]
+    },
+    {
+        "id": "96eeb6486dcb5612",
+        "type": "delay",
+        "z": "85e21fcb925ef32f",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "200",
+        "timeoutUnits": "milliseconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "x": 390,
+        "y": 340,
+        "wires": [
+            [
+                "783692f6378d4267"
+            ]
+        ]
+    },
+    {
+        "id": "0579389b3a09a42f",
+        "type": "link out",
+        "z": "85e21fcb925ef32f",
+        "name": "Create Setting out",
+        "links": [
+            "45a97566b65c65cc"
+        ],
+        "x": 335,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "78a9f756f5e301d0",
+        "type": "link out",
+        "z": "85e21fcb925ef32f",
+        "name": "Check Modbus Setting out",
+        "links": [
+            "04d132d87ffeb91a",
+            "45a97566b65c65cc"
+        ],
+        "x": 915,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "fc2aaff0224c1204",
+        "type": "link out",
+        "z": "85e21fcb925ef32f",
+        "name": "nonModbusSetting Out",
+        "links": [
+            "04d132d87ffeb91a",
+            "45a97566b65c65cc"
+        ],
+        "x": 335,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "f02e4aebf058b8df",
+        "type": "function",
+        "z": "85e21fcb925ef32f",
+        "name": "Init cube",
+        "func": "var device = flow.get('device');\nvar msgs = [null,null];\n//msgs[0] = { value: device.led0.value, 'fc': 0x6, 'unitid': 1, 'address': 0 , 'quantity': 1 };\n//msgs[1] = { value: device.led1.value, 'fc': 0x6, 'unitid': 1, 'address': 1 , 'quantity': 1 };\nreturn {topic : 'initCube', payload: msgs};",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1060,
+        "y": 60,
+        "wires": [
+            [
+                "2768f7d5ad53caa1"
+            ]
+        ]
+    },
+    {
+        "id": "2768f7d5ad53caa1",
+        "type": "split",
+        "z": "85e21fcb925ef32f",
+        "name": "",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "x": 1190,
+        "y": 60,
+        "wires": [
+            [
+                "d7e2c3ce605327b2"
+            ]
+        ]
+    },
+    {
+        "id": "d7e2c3ce605327b2",
+        "type": "delay",
+        "z": "85e21fcb925ef32f",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "x": 1340,
+        "y": 60,
+        "wires": [
+            [
+                "969950ea4867584d",
+                "998b9ea7a681c850"
+            ]
+        ]
+    },
+    {
+        "id": "969950ea4867584d",
+        "type": "modbus-flex-write",
+        "z": "85e21fcb925ef32f",
+        "name": "local setter flex",
+        "showStatusActivities": false,
+        "showErrors": false,
+        "server": "54dde46e.53267c",
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": false,
+        "x": 1520,
+        "y": 60,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "998b9ea7a681c850",
+        "type": "debug",
+        "z": "85e21fcb925ef32f",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1520,
+        "y": 120,
+        "wires": []
     }
 ]
