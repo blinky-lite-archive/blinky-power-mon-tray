@@ -1,7 +1,7 @@
 {
     "node-red": {
         "name": "node-red",
-        "version": "2.0.6-git",
+        "version": "2.1.4-git",
         "local": false,
         "user": false,
         "nodes": {
@@ -64,7 +64,8 @@
                 "name": "link",
                 "types": [
                     "link in",
-                    "link out"
+                    "link out",
+                    "link call"
                 ],
                 "enabled": true,
                 "local": false,
@@ -406,7 +407,7 @@
     },
     "node-red-dashboard": {
         "name": "node-red-dashboard",
-        "version": "2.30.0",
+        "version": "3.1.2",
         "local": true,
         "user": true,
         "nodes": {
@@ -645,7 +646,7 @@
     },
     "node-red-contrib-modbus": {
         "name": "node-red-contrib-modbus",
-        "version": "5.14.1",
+        "version": "5.16.0",
         "local": true,
         "user": true,
         "nodes": {
