@@ -4,7 +4,7 @@
   "arcPeriod": 60000,
   "timeStamp": 1634822239183,
   "lastArchive": 1634822197110,
-  "settingInProgress": 1,
+  "settingInProgress": 0,
   "linkQuality": {
     "action": "reading",
     "type": "scalar",
@@ -28,7 +28,7 @@
   "signalLevel": {
     "action": "reading",
     "type": "scalar",
-    "value": -24,
+    "value": -34,
     "unit": "dBm",
     "alarm": {
       "value": 0,
@@ -48,35 +48,15 @@
   "power": {
     "action": "reading",
     "type": "scalar",
-    "value": 9,
+    "value": 29.8,
     "unit": "Watts",
     "alarm": {
       "value": 1,
       "limits": {
         "lolo": 0,
-        "low": 6,
-        "high": 12,
-        "hihi": 18
-      },
-      "notify": {
-        "name": "",
-        "number": "",
-        "time": 0
-      }
-    }
-  },
-  "vbat": {
-    "action": "reading",
-    "type": "scalar",
-    "value": 4.31,
-    "unit": "Volts",
-    "alarm": {
-      "value": 0,
-      "limits": {
-        "lolo": 3,
-        "low": 3,
-        "high": 5,
-        "hihi": 5
+        "low": 500,
+        "high": 2000,
+        "hihi": 2500
       },
       "notify": {
         "name": "",
@@ -95,7 +75,7 @@
       "limits": {
         "lolo": -1,
         "low": -1,
-        "high": 3,
+        "high": 2,
         "hihi": 3
       },
       "notify": {
@@ -128,7 +108,7 @@
   "lora": {
     "action": "reading",
     "type": "scalar",
-    "value": -1,
+    "value": -51,
     "unit": "dBm",
     "alarm": {
       "value": 0,
@@ -148,35 +128,15 @@
   "powerAvg": {
     "action": "reading",
     "type": "scalar",
-    "value": 8.4,
+    "value": 29.1,
     "unit": "Watts",
     "alarm": {
-      "value": 0,
+      "value": 1,
       "limits": {
-        "lolo": -1,
-        "low": -1,
-        "high": 5000,
-        "hihi": 5000
-      },
-      "notify": {
-        "name": "",
-        "number": "",
-        "time": 0
-      }
-    }
-  },
-  "powerRms": {
-    "action": "reading",
-    "type": "scalar",
-    "value": 0.4,
-    "unit": "Watts",
-    "alarm": {
-      "value": 0,
-      "limits": {
-        "lolo": -1,
-        "low": -1,
-        "high": 5000,
-        "hihi": 5000
+        "lolo": 0,
+        "low": 200,
+        "high": 800,
+        "hihi": 1000
       },
       "notify": {
         "name": "",
@@ -188,7 +148,7 @@
   "dutyFactor": {
     "action": "reading",
     "type": "scalar",
-    "value": 91.2,
+    "value": 96.2,
     "unit": "%",
     "alarm": {
       "value": 0,
@@ -208,7 +168,7 @@
   "avgSamples": {
     "action": "setting",
     "type": "scalar",
-    "value": 100,
+    "value": 500,
     "unit": "unit",
     "alarm": {
       "value": 0,
