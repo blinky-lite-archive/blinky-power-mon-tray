@@ -14,6 +14,14 @@
         "info": ""
     },
     {
+        "id": "f2789820e0dcbdbc",
+        "type": "tab",
+        "label": "DeviceB",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
         "id": "b8a9252872fb4fd5",
         "type": "tab",
         "label": "WebApp",
@@ -235,7 +243,7 @@
         "tcpType": "DEFAULT",
         "serialPort": "$(SERIALPORT)",
         "serialType": "RTU-BUFFERD",
-        "serialBaudrate": "57600",
+        "serialBaudrate": "9600",
         "serialDatabits": "8",
         "serialStopbits": "1",
         "serialParity": "none",
@@ -499,7 +507,7 @@
         "type": "function",
         "z": "5d24679c66241466",
         "name": "Read Modbus",
-        "func": "var bufferLength = flow.get('deviceBufLen') * flow.get('numDevices');\nvar modeBusCommand = { 'fc': 0x3, 'unitid': 1, 'address': 1 , 'quantity': bufferLength } ;\nreturn {topic: \"readStatus\", payload:modeBusCommand};\n",
+        "func": "var bufferLength = flow.get('deviceBufLen');\nvar modeBusCommand = { 'fc': 0x3, 'unitid': 1, 'address': 9 , 'quantity': bufferLength } ;\nreturn {topic: \"readStatus\", payload:modeBusCommand};\n",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -518,8 +526,8 @@
         "type": "function",
         "z": "5d24679c66241466",
         "name": "Parse Modbus",
-        "func": "var deviceBufLen = flow.get('deviceBufLen');\nvar numDevices = flow.get('numDevices');\nif (msg.payload.data == null) return;\nif (msg.payload.data.length != (deviceBufLen * numDevices) ) return null;\nvar dataView     = new DataView(new ArrayBuffer(2));\n\n\nvar deviceData = [];\nfor (var ii = 0; ii < numDevices; ++ii)\n{\n    var dataArray = [];\n    for (var ij = 0; ij < deviceBufLen; ++ij)\n    {\n        for (ib = 0; ib < 2; ++ib)   dataView.setUint8(ib, msg.payload.buffer[ij * 2 + ib]);\n        dataArray[ij] = dataView.getInt16(0);\n    }\n    deviceData[ii] = \n    {\n        topic: ('device_' + (ii + 1).toString()),\n        payload : dataArray\n    }\n}\nreturn deviceData;\n",
-        "outputs": 8,
+        "func": "var deviceBufLen = flow.get('deviceBufLen');\nif (msg.payload.data == null) return;\nif (msg.payload.data.length != (deviceBufLen) ) return null;\nvar dataView     = new DataView(new ArrayBuffer(2));\n\nvar dataArray = [];\nfor (var ij = 0; ij < deviceBufLen; ++ij)\n{\n    for (ib = 0; ib < 2; ++ib)   dataView.setUint8(ib, msg.payload.buffer[ij * 2 + ib]);\n    dataArray[ij] = dataView.getInt16(0);\n}\nreturn {topic: dataArray[0], payload : dataArray}\n",
+        "outputs": 1,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
@@ -528,15 +536,8 @@
         "y": 820,
         "wires": [
             [
-                "7f85e777eafacdc3"
-            ],
-            [],
-            [],
-            [],
-            [],
-            [],
-            [],
-            []
+                "aad306014916a121"
+            ]
         ]
     },
     {
@@ -553,7 +554,7 @@
                 "vt": "str"
             }
         ],
-        "repeat": "6",
+        "repeat": "1",
         "crontab": "",
         "once": true,
         "onceDelay": "20",
@@ -572,11 +573,12 @@
         "type": "link out",
         "z": "5d24679c66241466",
         "name": "Parse Modbus Out 1",
+        "mode": "link",
         "links": [
             "7fa8c71b9cc8f5bf"
         ],
-        "x": 1055,
-        "y": 780,
+        "x": 1135,
+        "y": 760,
         "wires": []
     },
     {
@@ -601,7 +603,7 @@
         "type": "function",
         "z": "5d24679c66241466",
         "name": "Set Write Interval",
-        "func": "var modeBusCommand = {value: 3000, 'fc': 0x6, 'unitid': 1, 'address': 0 , 'quantity': 1 } ;\nreturn {topic: \"setWriteInterval\", payload:modeBusCommand};\n",
+        "func": "var modeBusCommand = {value: 2005, 'fc': 0x6, 'unitid': 1, 'address': 0 , 'quantity': 1 } ;\nreturn {topic: \"setWriteInterval\", payload:modeBusCommand};\n",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -640,7 +642,6 @@
         "wires": [
             [
                 "3a84b86cfe5f6a3c",
-                "6e42ee886169ceef",
                 "d5d7a89990aced70"
             ]
         ]
@@ -650,7 +651,7 @@
         "type": "function",
         "z": "5d24679c66241466",
         "name": "Set Device A",
-        "func": "var modeBusCommand = {value: 102, 'fc': 0x6, 'unitid': 1, 'address': 1 , 'quantity': 1 } ;\nreturn {topic: \"setDeviceA\", payload:modeBusCommand};\n",
+        "func": "var modeBusCommand = {value: 101, 'fc': 0x6, 'unitid': 1, 'address': 1 , 'quantity': 1 } ;\nreturn {topic: \"setDeviceA\", payload:modeBusCommand};\n",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -717,21 +718,6 @@
         ]
     },
     {
-        "id": "6e42ee886169ceef",
-        "type": "function",
-        "z": "5d24679c66241466",
-        "name": "numDevices",
-        "func": "flow.set('numDevices',1)\nreturn null;",
-        "outputs": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 450,
-        "y": 80,
-        "wires": []
-    },
-    {
         "id": "d5d7a89990aced70",
         "type": "function",
         "z": "5d24679c66241466",
@@ -793,7 +779,7 @@
         "type": "function",
         "z": "5d24679c66241466",
         "name": "Set Device B",
-        "func": "var modeBusCommand = {value: 0, 'fc': 0x6, 'unitid': 1, 'address': 15 , 'quantity': 1 } ;\nreturn {topic: \"setDeviceB\", payload:modeBusCommand};\n",
+        "func": "var modeBusCommand = {value: 102, 'fc': 0x6, 'unitid': 1, 'address': 2 , 'quantity': 1 } ;\nreturn {topic: \"setDeviceB\", payload:modeBusCommand};\n",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -838,7 +824,7 @@
         "type": "function",
         "z": "5d24679c66241466",
         "name": "Set Device C",
-        "func": "var modeBusCommand = {value: 0, 'fc': 0x6, 'unitid': 1, 'address': 29 , 'quantity': 1 } ;\nreturn {topic: \"setDeviceC\", payload:modeBusCommand};\n",
+        "func": "var modeBusCommand = {value: 103, 'fc': 0x6, 'unitid': 1, 'address': 3 , 'quantity': 1 } ;\nreturn {topic: \"setDeviceC\", payload:modeBusCommand};\n",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -883,7 +869,7 @@
         "type": "function",
         "z": "5d24679c66241466",
         "name": "Set Device D",
-        "func": "var modeBusCommand = {value: 0, 'fc': 0x6, 'unitid': 1, 'address': 43 , 'quantity': 1 } ;\nreturn {topic: \"setDeviceD\", payload:modeBusCommand};\n",
+        "func": "var modeBusCommand = {value: 0, 'fc': 0x6, 'unitid': 1, 'address': 4 , 'quantity': 1 } ;\nreturn {topic: \"setDeviceD\", payload:modeBusCommand};\n",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -928,7 +914,7 @@
         "type": "function",
         "z": "5d24679c66241466",
         "name": "Set Device E",
-        "func": "var modeBusCommand = {value: 0, 'fc': 0x6, 'unitid': 1, 'address': 57 , 'quantity': 1 } ;\nreturn {topic: \"setDeviceE\", payload:modeBusCommand};\n",
+        "func": "var modeBusCommand = {value: 0, 'fc': 0x6, 'unitid': 1, 'address': 5 , 'quantity': 1 } ;\nreturn {topic: \"setDeviceE\", payload:modeBusCommand};\n",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -973,7 +959,7 @@
         "type": "function",
         "z": "5d24679c66241466",
         "name": "Set Device F",
-        "func": "var modeBusCommand = {value: 0, 'fc': 0x6, 'unitid': 1, 'address': 71 , 'quantity': 1 } ;\nreturn {topic: \"setDeviceF\", payload:modeBusCommand};\n",
+        "func": "var modeBusCommand = {value: 0, 'fc': 0x6, 'unitid': 1, 'address': 6 , 'quantity': 1 } ;\nreturn {topic: \"setDeviceF\", payload:modeBusCommand};\n",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -1018,7 +1004,7 @@
         "type": "function",
         "z": "5d24679c66241466",
         "name": "Set Device G",
-        "func": "var modeBusCommand = {value: 0, 'fc': 0x6, 'unitid': 1, 'address': 85 , 'quantity': 1 } ;\nreturn {topic: \"setDeviceG\", payload:modeBusCommand};\n",
+        "func": "var modeBusCommand = {value: 0, 'fc': 0x6, 'unitid': 1, 'address': 7 , 'quantity': 1 } ;\nreturn {topic: \"setDeviceG\", payload:modeBusCommand};\n",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -1063,7 +1049,7 @@
         "type": "function",
         "z": "5d24679c66241466",
         "name": "Set Device H",
-        "func": "var modeBusCommand = {value: 0, 'fc': 0x6, 'unitid': 1, 'address': 99 , 'quantity': 1 } ;\nreturn {topic: \"setDeviceH\", payload:modeBusCommand};\n",
+        "func": "var modeBusCommand = {value: 0, 'fc': 0x6, 'unitid': 1, 'address': 8 , 'quantity': 1 } ;\nreturn {topic: \"setDeviceH\", payload:modeBusCommand};\n",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -1101,6 +1087,74 @@
                 "3b1e8fd97c4fd9be"
             ]
         ]
+    },
+    {
+        "id": "aad306014916a121",
+        "type": "switch",
+        "z": "5d24679c66241466",
+        "name": "",
+        "property": "topic",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "101",
+                "vt": "num"
+            },
+            {
+                "t": "eq",
+                "v": "102",
+                "vt": "num"
+            },
+            {
+                "t": "eq",
+                "v": "103",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 3,
+        "x": 1030,
+        "y": 820,
+        "wires": [
+            [
+                "7f85e777eafacdc3"
+            ],
+            [
+                "72791c2e8fb755f8"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "ae86f84fc2e396c0",
+        "type": "debug",
+        "z": "5d24679c66241466",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1010,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "72791c2e8fb755f8",
+        "type": "link out",
+        "z": "5d24679c66241466",
+        "name": "Parse Modbus Out 2",
+        "mode": "link",
+        "links": [
+            "dbed403dbe040caf"
+        ],
+        "x": 1135,
+        "y": 820,
+        "wires": []
     },
     {
         "id": "30f384ea.cf21fc",
@@ -1260,7 +1314,7 @@
         "id": "2f289f87.fe2ff",
         "type": "link in",
         "z": "85e21fcb925ef32f",
-        "name": "Device B web socket in",
+        "name": "Device A web socket in",
         "links": [
             "ea909034.6fb25"
         ],
@@ -1451,16 +1505,15 @@
             [
                 "99fbe8135d0ce161"
             ],
-            [
-                "85c2a6bdf920bd22"
-            ]
+            []
         ]
     },
     {
         "id": "c5c370e7342703d0",
         "type": "link out",
         "z": "85e21fcb925ef32f",
-        "name": "Device B web socket out",
+        "name": "Device A web socket out",
+        "mode": "link",
         "links": [
             "d033193d.436d68"
         ],
@@ -2187,6 +2240,1088 @@
         "wires": []
     },
     {
+        "id": "54d47a3df66c6c4f",
+        "type": "function",
+        "z": "f2789820e0dcbdbc",
+        "name": "Save device config in Memory",
+        "func": "msg.payload.settingInProgress = 0;\nflow.set('device', msg.payload);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 850,
+        "y": 60,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b9ba35106bdeb4aa",
+        "type": "mqtt in",
+        "z": "f2789820e0dcbdbc",
+        "name": "Subscribe DeviceB",
+        "topic": "$(MQTTDEVICEB)",
+        "qos": "0",
+        "datatype": "auto",
+        "broker": "79250bf3.365cc4",
+        "nl": false,
+        "rap": false,
+        "inputs": 0,
+        "x": 130,
+        "y": 160,
+        "wires": [
+            [
+                "02cd0adee50d13bc"
+            ]
+        ]
+    },
+    {
+        "id": "972e4f39f2bc513f",
+        "type": "inject",
+        "z": "f2789820e0dcbdbc",
+        "name": "deviceB",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "2",
+        "topic": "deviceB",
+        "payload": "MQTTDEVICEB",
+        "payloadType": "env",
+        "x": 120,
+        "y": 60,
+        "wires": [
+            [
+                "fbb5d3ebe70a50df"
+            ]
+        ]
+    },
+    {
+        "id": "edb92f7e0579525b",
+        "type": "file in",
+        "z": "f2789820e0dcbdbc",
+        "name": "Read device config",
+        "filename": "",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "x": 490,
+        "y": 60,
+        "wires": [
+            [
+                "0fb2f11cfaad2e9f"
+            ]
+        ]
+    },
+    {
+        "id": "0fb2f11cfaad2e9f",
+        "type": "json",
+        "z": "f2789820e0dcbdbc",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 650,
+        "y": 60,
+        "wires": [
+            [
+                "54d47a3df66c6c4f"
+            ]
+        ]
+    },
+    {
+        "id": "fbb5d3ebe70a50df",
+        "type": "function",
+        "z": "f2789820e0dcbdbc",
+        "name": "Init flow Variables",
+        "func": "var mqttSplit = msg.payload.split('/');\nvar deviceProps = {\n    project     :   mqttSplit[0],\n    deviceType  :   mqttSplit[1],\n    name        :   mqttSplit[2],\n    configFile  :   mqttSplit[1] + '-' + mqttSplit[2] + '.json',\n    mapFile     :   mqttSplit[1] + '-' + mqttSplit[2] + '-map.json'\n};\nflow.set('deviceProps',deviceProps);\nreturn {topic: 'readFile', 'filename':deviceProps.configFile};",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 290,
+        "y": 60,
+        "wires": [
+            [
+                "edb92f7e0579525b"
+            ]
+        ]
+    },
+    {
+        "id": "bc23f4d3fedd41cf",
+        "type": "file",
+        "z": "f2789820e0dcbdbc",
+        "name": "Init Settings",
+        "filename": "",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "true",
+        "encoding": "none",
+        "x": 1370,
+        "y": 340,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b778483856178103",
+        "type": "function",
+        "z": "f2789820e0dcbdbc",
+        "name": "Save Settings to File",
+        "func": "var jsonPretty = JSON.stringify(flow.get('device'),null,2);\nreturn {topic: msg.payload, payload:jsonPretty, 'filename':flow.get('deviceProps').configFile};",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1180,
+        "y": 340,
+        "wires": [
+            [
+                "bc23f4d3fedd41cf"
+            ]
+        ]
+    },
+    {
+        "id": "fd1068309c683217",
+        "type": "link in",
+        "z": "f2789820e0dcbdbc",
+        "name": "Device B web socket in",
+        "links": [
+            "ea909034.6fb25"
+        ],
+        "x": 55,
+        "y": 240,
+        "wires": [
+            [
+                "e2a0a1f8fbce9845"
+            ]
+        ]
+    },
+    {
+        "id": "02cd0adee50d13bc",
+        "type": "json",
+        "z": "f2789820e0dcbdbc",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 310,
+        "y": 160,
+        "wires": [
+            [
+                "0abef5af8fb250b2"
+            ]
+        ]
+    },
+    {
+        "id": "f8f7c6e4d2dd3e50",
+        "type": "exec",
+        "z": "f2789820e0dcbdbc",
+        "command": "pm2 restart red",
+        "addpay": false,
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "oldrc": false,
+        "name": "Restart",
+        "x": 500,
+        "y": 960,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "f302c29f334e710d",
+        "type": "switch",
+        "z": "f2789820e0dcbdbc",
+        "name": "Reset Tray",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "num"
+            },
+            {
+                "t": "eq",
+                "v": "2",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 310,
+        "y": 980,
+        "wires": [
+            [
+                "f8f7c6e4d2dd3e50"
+            ],
+            [
+                "14aa7013db0da27a"
+            ]
+        ]
+    },
+    {
+        "id": "14aa7013db0da27a",
+        "type": "exec",
+        "z": "f2789820e0dcbdbc",
+        "command": "sudo reboot",
+        "addpay": false,
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "oldrc": false,
+        "name": "Reboot",
+        "x": 500,
+        "y": 1020,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "a903f16fc1a1cc6c",
+        "type": "delay",
+        "z": "f2789820e0dcbdbc",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "2",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 160,
+        "y": 980,
+        "wires": [
+            [
+                "f302c29f334e710d"
+            ]
+        ]
+    },
+    {
+        "id": "178be2815d379437",
+        "type": "mqtt out",
+        "z": "f2789820e0dcbdbc",
+        "name": "Publish Readings",
+        "topic": "",
+        "qos": "0",
+        "retain": "false",
+        "broker": "79250bf3.365cc4",
+        "x": 1510,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "0c0d18a95d8a9e82",
+        "type": "function",
+        "z": "f2789820e0dcbdbc",
+        "name": "Readings Alarm Scan",
+        "func": "if (!msg.payload) return null;\nvar device = flow.get('device');\ndevice.linkQuality.value     = global.get('linkQuality');\ndevice.signalLevel.value     = global.get('signalLevel');\nvar alarmFlagReading = scalarAlarmScan(device, 'reading');\nvar alarmFlagSetting = scalarAlarmScan(device, 'setting');\nvar newMsg = null;\nif (alarmFlagReading || alarmFlagSetting)\n{\n    newMsg = \n    {\n        topic: 'alarm',\n        payload: true\n    }\n}\nreturn newMsg;\n\nfunction getActionArray(device, type, actionType)\n{\n    var actionArray = [];\n    var keys = Object.keys(device);\n    for (var ii = 0; ii < keys.length; ++ii)\n    {\n        if (device[keys[ii]].hasOwnProperty('type'))\n        {\n            if (device[keys[ii]].type == type)\n            {\n                if (device[keys[ii]].action == actionType)\n                {\n                    actionArray.push(device[keys[ii]]);\n                }\n            }\n        }\n    }\n    return actionArray;\n}\nfunction scalarAlarmScan(device, actionType)\n{\n    var alarmFlag = false;\n    var actionArray = getActionArray(device, 'scalar', actionType);\n    if (actionArray.length > 0)\n    {\n        for (var ii = 0; ii < actionArray.length; ++ii)\n        {\n            actionArray[ii].alarm.value = 0;\n            if (!isNaN(actionArray[ii].value))\n            {\n                if (actionArray[ii].value <= actionArray[ii].alarm.limits.low)  actionArray[ii].alarm.value = 1;\n                if (actionArray[ii].value <= actionArray[ii].alarm.limits.lolo) actionArray[ii].alarm.value = 3;\n                if (actionArray[ii].value >= actionArray[ii].alarm.limits.high) actionArray[ii].alarm.value = 2;\n                if (actionArray[ii].value >= actionArray[ii].alarm.limits.hihi) actionArray[ii].alarm.value = 4;\n            }\n            if (actionArray[ii].alarm.value > 0)  alarmFlag = true\n        }\n    }\n    return alarmFlag;\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 900,
+        "y": 640,
+        "wires": [
+            [
+                "1e9425553aad33db"
+            ]
+        ]
+    },
+    {
+        "id": "4e5db9bbf7692ba6",
+        "type": "function",
+        "z": "f2789820e0dcbdbc",
+        "name": "Prepare MQTT topic",
+        "func": "var mqttArray = msg.topic.split('/');\nvar device = \n{\n    project     : mqttArray[0],\n    deviceType  : mqttArray[1],\n    name        : mqttArray[2],\n    prop        : mqttArray[3],\n};\nreturn {topic : msg.topic, payload:{topic:'readings', mqttDevice : device, payload:msg.payload}};",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1260,
+        "y": 220,
+        "wires": [
+            [
+                "7ff6525dcb4c7692"
+            ]
+        ]
+    },
+    {
+        "id": "9ba1e4a8984b05a8",
+        "type": "function",
+        "z": "f2789820e0dcbdbc",
+        "name": "Create Readings",
+        "func": "var device = flow.get('device');\nif (device.archiveNow > 0) return null;\n//node.warn(msg.payload);\nif (msg.payload[0] != Number(device.name)) return [null,{topic:'badCubeData', payload:true}];\nvar powerArray = context.get('powerArray');\nvar powerMaxArray = context.get('powerMaxArray');\nvar intervalArray = context.get('intervalArray');\nvar badCubeRead = context.get('badCubeRead');\nif ((msg.payload[2] == 0) && (msg.payload[6] == 0))\n{\n    badCubeRead = badCubeRead + 1;\n    context.set('badCubeRead',badCubeRead);\n    if (badCubeRead > 4) \n    {\n        device.power.value = 0;\n        device.powerAvg.value = 0;\n        device.dutyFactor.value = 0;\n        device.interlock.value = 3;\n        device.temperature.value  = 0;\n        device.lora.value = 0;\n        return  [{topic:'newSettingDone', payload:true}, {topic:'badCubeRead', payload:badCubeRead}];\n    }\n    else\n    {\n        return  [null, {topic:'badCubeRead', payload:badCubeRead}];\n    }\n}\nif (msg.payload[6] < 3200) return  [null, {topic:'badHallRead', payload:msg.payload[1]}];\ncontext.set('badCubeRead',0);\n\ndevice.power.value = 4800.0 * msg.payload[8] / msg.payload[6];\nvar avgIntervalPower = 4800.0 * msg.payload[9] / msg.payload[6];\npowerArray.push(avgIntervalPower);\npowerMaxArray.push(device.power.value);\nintervalArray.push(msg.payload[2] / 10.0);\nif (powerArray.length > device.avgSamples.value) \n{\n    powerArray.shift();\n    powerMaxArray.shift();\n    intervalArray.shift();\n}\ndevice.powerAvg.value = 0.0;\nvar totalIntervalTime = 0.0;\nvar powerMax = 0.0;\nfor (var ii = 0; ii < powerArray.length; ++ii)\n{\n    device.powerAvg.value = device.powerAvg.value + powerArray[ii] * intervalArray[ii];\n    totalIntervalTime = totalIntervalTime + intervalArray[ii];\n    if (powerMax < powerMaxArray[ii]) powerMax = powerMaxArray[ii];\n}\ndevice.powerAvg.value = device.powerAvg.value / totalIntervalTime;\ndevice.dutyFactor.value = 100.0 * device.powerAvg.value / powerMax;\n\ndevice.power.value = Math.round(10 * device.power.value) / 10;\ndevice.powerAvg.value = Math.round(10 * device.powerAvg.value) / 10;\ndevice.dutyFactor.value = Math.round(10 * device.dutyFactor.value) / 10;\n\ndevice.interlock.value = 0;\nif ((msg.payload[3] == 0) && (msg.payload[4] == 1))\n{\n    device.interlock.value = 1;    \n}\nif ((msg.payload[3] == 1) && (msg.payload[4] == 0))\n{\n    device.interlock.value = 2;    \n}\ndevice.temperature.value  = msg.payload[5];\ndevice.lora.value = msg.payload[1];\n \n//node.warn(device);\n//node.warn('P3 = ' + msg.payload[3].toString() + ' P4 = ' + msg.payload[4].toString())\n//node.warn(device.temperature.value);\nreturn  [{topic:'newSettingDone', payload:true},null];\n",
+        "outputs": 2,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\ncontext.set('powerArray',[]);\ncontext.set('powerMaxArray',[]);\ncontext.set('intervalArray',[]);\ncontext.set('badCubeRead',0);\n",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 640,
+        "wires": [
+            [
+                "0c0d18a95d8a9e82"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "7ff6525dcb4c7692",
+        "type": "link out",
+        "z": "f2789820e0dcbdbc",
+        "name": "Device B web socket out",
+        "links": [
+            "d033193d.436d68"
+        ],
+        "x": 1395,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "225bce3a2c33c09b",
+        "type": "switch",
+        "z": "f2789820e0dcbdbc",
+        "name": "",
+        "property": "topic",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "setting",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "ping",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "config",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "reset",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 4,
+        "x": 650,
+        "y": 160,
+        "wires": [
+            [
+                "e26bde9651264edf"
+            ],
+            [
+                "d82224c4816b26bb"
+            ],
+            [
+                "c81f7b1a33592fe4"
+            ],
+            [
+                "4dccb629e8238bff"
+            ]
+        ]
+    },
+    {
+        "id": "0abef5af8fb250b2",
+        "type": "function",
+        "z": "f2789820e0dcbdbc",
+        "name": "Filter MQTT",
+        "func": "return {topic:msg.topic.split('/')[4], payload:msg.payload};",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 160,
+        "wires": [
+            [
+                "225bce3a2c33c09b"
+            ]
+        ]
+    },
+    {
+        "id": "e130db529219b9b9",
+        "type": "function",
+        "z": "f2789820e0dcbdbc",
+        "name": "Shift Msg",
+        "func": "return msg.payload;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 240,
+        "wires": [
+            [
+                "a6945f0d777351d1"
+            ]
+        ]
+    },
+    {
+        "id": "a6945f0d777351d1",
+        "type": "function",
+        "z": "f2789820e0dcbdbc",
+        "name": "Filter Websocket",
+        "func": "var inputDeviceProps = msg.payload.topic.split('/');\nvar deviceProps = flow.get('deviceProps')\nif (inputDeviceProps[0] != deviceProps.project) return null;\nif (inputDeviceProps[1] != deviceProps.deviceType) return null;\nif (inputDeviceProps[2] != deviceProps.name) return null;\nreturn {topic:msg.topic, payload:msg.payload.payload};\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 460,
+        "y": 240,
+        "wires": [
+            [
+                "225bce3a2c33c09b"
+            ]
+        ]
+    },
+    {
+        "id": "e2a0a1f8fbce9845",
+        "type": "json",
+        "z": "f2789820e0dcbdbc",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 150,
+        "y": 240,
+        "wires": [
+            [
+                "e130db529219b9b9"
+            ]
+        ]
+    },
+    {
+        "id": "7a52daf23b869b29",
+        "type": "function",
+        "z": "f2789820e0dcbdbc",
+        "name": "Publish device",
+        "func": "if (!msg.payload) return null;\nvar device = flow.get('device');\nvar newMsg = \n{\n    topic: flow.get('deviceProps').project + '/' + flow.get('deviceProps').deviceType + '/' + flow.get('deviceProps').name + '/reading',\n    payload: JSON.stringify(device)\n};\nreturn  newMsg;  \n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1040,
+        "y": 180,
+        "wires": [
+            [
+                "4e5db9bbf7692ba6",
+                "55e86d0d2f6c0463"
+            ]
+        ]
+    },
+    {
+        "id": "bdcd4ed0f5015bbd",
+        "type": "link in",
+        "z": "f2789820e0dcbdbc",
+        "name": "Publish Device In",
+        "links": [
+            "287d5bd7b5db5b90",
+            "d82224c4816b26bb",
+            "a66ef2e5b482662a",
+            "6af21e76e0c4ad80",
+            "3bc3265584bc9b75",
+            "ef1d233c99c88c82",
+            "f492cee6c77ccd1f",
+            "4b0382a31bcb8ddd",
+            "a1464d257bbcec23",
+            "0579389b3a09a42f",
+            "78a9f756f5e301d0",
+            "89ffa1e327fcec57"
+        ],
+        "x": 915,
+        "y": 180,
+        "wires": [
+            [
+                "7a52daf23b869b29"
+            ]
+        ]
+    },
+    {
+        "id": "287d5bd7b5db5b90",
+        "type": "link out",
+        "z": "f2789820e0dcbdbc",
+        "name": "Alarm Scan out",
+        "links": [
+            "bdcd4ed0f5015bbd"
+        ],
+        "x": 1235,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "d82224c4816b26bb",
+        "type": "link out",
+        "z": "f2789820e0dcbdbc",
+        "name": "Ping Out",
+        "links": [
+            "bdcd4ed0f5015bbd"
+        ],
+        "x": 755,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "022d5d2fd1a7280d",
+        "type": "function",
+        "z": "f2789820e0dcbdbc",
+        "name": "Pause Device readings",
+        "func": "var device = flow.get('device');\ndevice.settingInProgress = 1;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 210,
+        "y": 460,
+        "wires": [
+            [
+                "eac3ec169a2c268d",
+                "3bc3265584bc9b75"
+            ]
+        ]
+    },
+    {
+        "id": "c81f7b1a33592fe4",
+        "type": "link out",
+        "z": "f2789820e0dcbdbc",
+        "name": "Config Out",
+        "links": [
+            "e0c46b59fe398536"
+        ],
+        "x": 755,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "e0c46b59fe398536",
+        "type": "link in",
+        "z": "f2789820e0dcbdbc",
+        "name": "Pause Device Readings in",
+        "links": [
+            "c81f7b1a33592fe4"
+        ],
+        "x": 55,
+        "y": 460,
+        "wires": [
+            [
+                "022d5d2fd1a7280d"
+            ]
+        ]
+    },
+    {
+        "id": "eac3ec169a2c268d",
+        "type": "delay",
+        "z": "f2789820e0dcbdbc",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "1",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 440,
+        "y": 460,
+        "wires": [
+            [
+                "84420a2f528e94ee"
+            ]
+        ]
+    },
+    {
+        "id": "84420a2f528e94ee",
+        "type": "function",
+        "z": "f2789820e0dcbdbc",
+        "name": "Save config file",
+        "func": "flow.set('device',JSON.parse(JSON.stringify(msg.payload)));\nvar device = flow.get('device');\ndevice.settingInProgress = 1;\n\nreturn {topic:'deviceConfigCompleted', payload:true};",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 620,
+        "y": 460,
+        "wires": [
+            [
+                "8a558bf080aa11a4",
+                "9eeec3283b8372e3"
+            ]
+        ]
+    },
+    {
+        "id": "8a558bf080aa11a4",
+        "type": "delay",
+        "z": "f2789820e0dcbdbc",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "1",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 820,
+        "y": 460,
+        "wires": [
+            [
+                "273080ee99a29e0a"
+            ]
+        ]
+    },
+    {
+        "id": "273080ee99a29e0a",
+        "type": "function",
+        "z": "f2789820e0dcbdbc",
+        "name": "Continue Device readings",
+        "func": "var device = flow.get('device');\ndevice.settingInProgress = 0;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1030,
+        "y": 460,
+        "wires": [
+            [
+                "ef1d233c99c88c82"
+            ]
+        ]
+    },
+    {
+        "id": "344bc4368e2a39d2",
+        "type": "link in",
+        "z": "f2789820e0dcbdbc",
+        "name": "Save Settings to file in",
+        "links": [
+            "6af21e76e0c4ad80",
+            "9eeec3283b8372e3",
+            "a1464d257bbcec23",
+            "4b0382a31bcb8ddd",
+            "78a9f756f5e301d0",
+            "89ffa1e327fcec57"
+        ],
+        "x": 1035,
+        "y": 340,
+        "wires": [
+            [
+                "b778483856178103"
+            ]
+        ]
+    },
+    {
+        "id": "3bc3265584bc9b75",
+        "type": "link out",
+        "z": "f2789820e0dcbdbc",
+        "name": "Pause Device Readings out",
+        "links": [
+            "bdcd4ed0f5015bbd"
+        ],
+        "x": 395,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "9eeec3283b8372e3",
+        "type": "link out",
+        "z": "f2789820e0dcbdbc",
+        "name": "Save config file out",
+        "links": [
+            "344bc4368e2a39d2"
+        ],
+        "x": 775,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "ef1d233c99c88c82",
+        "type": "link out",
+        "z": "f2789820e0dcbdbc",
+        "name": "Continue Devie Readings out",
+        "links": [
+            "bdcd4ed0f5015bbd"
+        ],
+        "x": 1175,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "1e9425553aad33db",
+        "type": "delay",
+        "z": "f2789820e0dcbdbc",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "5",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1120,
+        "y": 640,
+        "wires": [
+            [
+                "287d5bd7b5db5b90"
+            ]
+        ]
+    },
+    {
+        "id": "9902d18636ddde83",
+        "type": "inject",
+        "z": "f2789820e0dcbdbc",
+        "name": "Archive clock",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "8",
+        "topic": "archiveClock",
+        "payloadType": "date",
+        "x": 140,
+        "y": 780,
+        "wires": [
+            [
+                "fc927dda51887490"
+            ]
+        ]
+    },
+    {
+        "id": "fc927dda51887490",
+        "type": "function",
+        "z": "f2789820e0dcbdbc",
+        "name": "Archive Pulse",
+        "func": "var device = flow.get('device');\nvar lastArchive = context.get('lastArchive');\nvar now = new Date().getTime();\nif ((now - lastArchive) <= device.arcPeriod) return null;\ncontext.set('lastArchive', now);\nreturn {topic:'archivePulse', payload:true};",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\ncontext.set('lastArchive', new Date().getTime());",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 780,
+        "wires": [
+            [
+                "f492cee6c77ccd1f"
+            ]
+        ]
+    },
+    {
+        "id": "f492cee6c77ccd1f",
+        "type": "link out",
+        "z": "f2789820e0dcbdbc",
+        "name": "Archive Pulse Out",
+        "links": [
+            "bdcd4ed0f5015bbd"
+        ],
+        "x": 475,
+        "y": 780,
+        "wires": []
+    },
+    {
+        "id": "4dccb629e8238bff",
+        "type": "link out",
+        "z": "f2789820e0dcbdbc",
+        "name": "Reset Out",
+        "links": [
+            "a002d93a84c2d7bc"
+        ],
+        "x": 755,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "a002d93a84c2d7bc",
+        "type": "link in",
+        "z": "f2789820e0dcbdbc",
+        "name": "Reset in",
+        "links": [
+            "4dccb629e8238bff"
+        ],
+        "x": 55,
+        "y": 980,
+        "wires": [
+            [
+                "a903f16fc1a1cc6c"
+            ]
+        ]
+    },
+    {
+        "id": "dbed403dbe040caf",
+        "type": "link in",
+        "z": "f2789820e0dcbdbc",
+        "name": "Create Readings In",
+        "links": [
+            "72791c2e8fb755f8"
+        ],
+        "x": 555,
+        "y": 640,
+        "wires": [
+            [
+                "9ba1e4a8984b05a8"
+            ]
+        ]
+    },
+    {
+        "id": "0715d6f99b6ef8a9",
+        "type": "debug",
+        "z": "f2789820e0dcbdbc",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 880,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "e26bde9651264edf",
+        "type": "link out",
+        "z": "f2789820e0dcbdbc",
+        "name": "New Setting In",
+        "links": [
+            "f7452a1056f8692e"
+        ],
+        "x": 755,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "f7452a1056f8692e",
+        "type": "link in",
+        "z": "f2789820e0dcbdbc",
+        "name": "Modbus setting in",
+        "links": [
+            "4493527757138cdc",
+            "e26bde9651264edf"
+        ],
+        "x": 55,
+        "y": 340,
+        "wires": [
+            [
+                "cb24858c9afcbd90"
+            ]
+        ]
+    },
+    {
+        "id": "cb24858c9afcbd90",
+        "type": "function",
+        "z": "f2789820e0dcbdbc",
+        "name": "Create Setting",
+        "func": "var device = flow.get('device');\nswitch(msg.payload.attr)\n{\n    case 'avgSamples':\n        device.avgSamples.value  = msg.payload.value;\n        break;\n    default:\n        break;\n}\ndevice.settingInProgress = 0;\nreturn {topic:'settingDone', payload:true};\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 180,
+        "y": 340,
+        "wires": [
+            [
+                "89ffa1e327fcec57"
+            ]
+        ]
+    },
+    {
+        "id": "89ffa1e327fcec57",
+        "type": "link out",
+        "z": "f2789820e0dcbdbc",
+        "name": "nonModbusSetting Out",
+        "links": [
+            "344bc4368e2a39d2",
+            "bdcd4ed0f5015bbd"
+        ],
+        "x": 315,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "18223a9ff8cf678a",
+        "type": "inject",
+        "z": "f2789820e0dcbdbc",
+        "name": "Archive now",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "archiveNow",
+        "payloadType": "date",
+        "x": 130,
+        "y": 840,
+        "wires": [
+            [
+                "a49386a54a2e045a"
+            ]
+        ]
+    },
+    {
+        "id": "a49386a54a2e045a",
+        "type": "function",
+        "z": "f2789820e0dcbdbc",
+        "name": "Single Archive Pulse",
+        "func": "var device = flow.get('device');\ndevice.archiveNow = 1;\nreturn {topic:'archivePulse', payload:true};",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\ncontext.set('lastArchive', new Date().getTime());",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 840,
+        "wires": [
+            [
+                "f492cee6c77ccd1f"
+            ]
+        ]
+    },
+    {
+        "id": "55e86d0d2f6c0463",
+        "type": "function",
+        "z": "f2789820e0dcbdbc",
+        "name": "Check ArchiveNow",
+        "func": "var device = flow.get(\"device\");\nvar resetArchiveNowMsg = null;\nif (device.archiveNow > 0) resetArchiveNowMsg = {topic:\"resetArchiveNow\", payload:true};\nreturn [msg,resetArchiveNowMsg];",
+        "outputs": 2,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1250,
+        "y": 140,
+        "wires": [
+            [
+                "178be2815d379437"
+            ],
+            [
+                "6de06faf53e71e65"
+            ]
+        ]
+    },
+    {
+        "id": "6de06faf53e71e65",
+        "type": "delay",
+        "z": "f2789820e0dcbdbc",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "1",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1500,
+        "y": 200,
+        "wires": [
+            [
+                "9d5f12f878b3682b",
+                "4aaadd3ec830d04d"
+            ]
+        ]
+    },
+    {
+        "id": "9d5f12f878b3682b",
+        "type": "function",
+        "z": "f2789820e0dcbdbc",
+        "name": "Reset ArchiveNow",
+        "func": "flow.get(\"device\").archiveNow = 0;\n",
+        "outputs": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1680,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "4aaadd3ec830d04d",
+        "type": "debug",
+        "z": "f2789820e0dcbdbc",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1670,
+        "y": 260,
+        "wires": []
+    },
+    {
         "id": "1482e22f.57fa2e",
         "type": "http in",
         "z": "b8a9252872fb4fd5",
@@ -2330,7 +3465,8 @@
         "links": [
             "2f289f87.fe2ff",
             "c7f3b5bf.85c9a8",
-            "20f3591beafd3b8d"
+            "20f3591beafd3b8d",
+            "fd1068309c683217"
         ],
         "x": 295,
         "y": 720,
@@ -2344,7 +3480,8 @@
         "links": [
             "1cdcbcd8.9514e3",
             "78ceea9e.d0b204",
-            "83df348964389a53"
+            "83df348964389a53",
+            "7ff6525dcb4c7692"
         ],
         "x": 635,
         "y": 720,
@@ -2911,7 +4048,7 @@
         "fieldType": "msg",
         "format": "javascript",
         "syntax": "mustache",
-        "template": "// Archive JavaScript\n        function getArchive(hours)\n        { \n            $('#archiveCardId').show();\n\n//            if (hours > 2) messageDialog('Info', 'Wait', 'Getting Archive Data');\n            $('#archive2hrButton').attr(\"disabled\", true); \n            $('#archive4hrButton').attr(\"disabled\", true); \n            $('#archive8hrButton').attr(\"disabled\", true); \n            $('#archive24hrButton').attr(\"disabled\", true); \n            $('#archive72hrButton').attr(\"disabled\", true); \n            $('#archive168hrButton').attr(\"disabled\", true); \n            $('#archive2hrButton').css('color', 'var(--color5)'); \n            $('#archive2hrButton').css('background-color', 'var(--color1)'); \n            $('#archive4hrButton').css('color', 'var(--color5)'); \n            $('#archive4hrButton').css('background-color', 'var(--color1)'); \n            $('#archive8hrButton').css('color', 'var(--color5)'); \n            $('#archive8hrButton').css('background-color', 'var(--color1)'); \n            $('#archive24hrButton').css('color', 'var(--color5)'); \n            $('#archive24hrButton').css('background-color', 'var(--color1)'); \n            $('#archive72hrButton').css('color', 'var(--color5)'); \n            $('#archive72hrButton').css('background-color', 'var(--color1)'); \n            $('#archive168hrButton').css('color', 'var(--color5)'); \n            $('#archive168hrButton').css('background-color', 'var(--color1)'); \n            switch(hours)\n            {\n                case 2:\n                    $('#archive2hrButton').css('color', 'var(--color1)'); \n                    $('#archive2hrButton').css('background-color', 'var(--color5)'); \n                    break;\n                case 4:\n                    $('#archive4hrButton').css('color', 'var(--color1)'); \n                    $('#archive4hrButton').css('background-color', 'var(--color5)'); \n                    break;\n                case 8:\n                    $('#archive8hrButton').css('color', 'var(--color1)'); \n                    $('#archive8hrButton').css('background-color', 'var(--color5)'); \n                    break;\n                case 24:\n                    $('#archive24hrButton').css('color', 'var(--color1)'); \n                    $('#archive24hrButton').css('background-color', 'var(--color5)'); \n                    break;\n                case 72:\n                    $('#archive72hrButton').css('color', 'var(--color1)'); \n                    $('#archive72hrButton').css('background-color', 'var(--color5)'); \n                    break;\n                case 168:\n                    $('#archive168hrButton').css('color', 'var(--color1)'); \n                    $('#archive168hrButton').css('background-color', 'var(--color5)'); \n                    break;\n                default:\n                // code block\n            }\n\n            archiveRequestList = [];\n            archiveList = [];\n            var stopDate = new Date().getTime();\n            var startDate = stopDate - hours * 3600000;\n            archiveRequestList[0] = \n            {\n                deviceType : restfulDevice.deviceType,\n                name : restfulDevice.name, \n                attr : ['power','powerAvg','powerRms', 'dutyFactor'],\n                startDate: startDate, \n                stopDate: stopDate,\n            };\n            getArchiveValues();\n\n        }\n        function getArchiveValues()\n        {\n            var actionMsg = \n                {\n                    device      : archiveRequestList[0]\n                };\n            sendActionMsg('readDatabase','readDatabase', actionMsg);\n            archiveRequestList.shift();\n            return;\n        }\n        function putArchiveValues(data)\n        {\n            archiveList.push(data);\n            if (archiveRequestList.length > 0)\n            {\n                getArchiveValues();\n            }\n            else\n            {\n                plotArchive();\n            }\n        }\n\n        function plotArchive()\n        {\n//            $( \"#messageDialog\" ).dialog( \"close\" );\n            var layout =\n            {\n                showlegend  : true,\n                legend      : { x: 0, y: 1.15},\n                height      : '500',\n                width       : '',\n                xaxis       :\n                {\n//                    title: 'Hours since ' + new Date(archiveList[0].device.stopDate).toLocaleString(),\n                    type: 'date'\n                },\n                yaxis:\n                {\n                    title           : 'Power (W)',\n                    titlefont       : {color: '#557a95'},\n                    tickfont        : {color: '#557a95'},\n                    gridcolor       : '#beceda',\n                    zerolinecolor   : '#beceda',\n                    linecolor       : '#beceda',\n                    rangemode       : 'tozero'\n                },\n                yaxis2:\n                {\n                    title           : 'Duty Factor (%)',\n                    titlefont       : {color: '#f2a31f'},\n                    tickfont        : {color: '#f2a31f'},\n                    gridcolor       : '#f2a31f',\n                    zerolinecolor   : '#f2a31f',\n                    linecolor       : '#f2a31f',\n                    overlaying: 'y',\n                    side: 'right',\n                    range: [0, 100]\n                },\n                margin: \n                    {\n                        t: 30, //top margin\n    //                    l: 0, //left margin\n    //                    r: 0, //right margin\n    //                    b: 20 //bottom margin\n                    },\n            };\n            var trace1 = \n            {\n                x: [],\n                y: [],\n                name: 'Power',\n                yaxis: 'y1',\n                type: 'scatter',\n                mode: 'lines',\n                line: {color: 'blue'}\n            };\n            var trace2 = \n            {\n                x: [],\n                y: [],\n                name: 'Avg Power',\n                yaxis: 'y1',\n                type: 'scatter',\n                mode: 'lines',\n                line: {color: 'red'}\n            };\n            var trace3 = \n            {\n                x: [],\n                y: [],\n                name: 'RMS Power',\n                yaxis: 'y1',\n                type: 'scatter',\n                mode: 'lines',\n                line: {color: 'green'}\n            };\n            var trace4 = \n            {\n                x: [],\n                y: [],\n                name: 'Duty Factor',\n                yaxis: 'y2',\n                type: 'scatter',\n                mode: 'lines',\n                line: {color: 'orange'}\n            };\n            for (var ii = 0; ii < archiveList[0].trace.length; ++ii)\n            {\n//                var x = (archiveList[0].trace[ii].timeStamp - archiveList[0].device.stopDate) / 3600000.0;\n                var x = archiveList[0].trace[ii].timeStamp;\n                trace1.x[ii] = x;\n                trace1.y[ii] = archiveList[0].trace[ii][archiveList[0].device.attr[0]] ;\n                trace2.x[ii] = x;\n                trace2.y[ii] = archiveList[0].trace[ii][archiveList[0].device.attr[1]];\n                trace3.x[ii] = x;\n                trace3.y[ii] = archiveList[0].trace[ii][archiveList[0].device.attr[2]];\n                trace4.x[ii] = x;\n                trace4.y[ii] = archiveList[0].trace[ii][archiveList[0].device.attr[3]];\n             }\n\n\n            Plotly.newPlot('archiveChart', [trace1,trace2, trace3, trace4], layout);\n            $('#archive2hrButton').attr(\"disabled\", false); \n            $('#archive4hrButton').attr(\"disabled\", false); \n            $('#archive8hrButton').attr(\"disabled\", false); \n            $('#archive24hrButton').attr(\"disabled\", false); \n            $('#archive72hrButton').attr(\"disabled\", false); \n            $('#archive168hrButton').attr(\"disabled\", false); \n        }\n",
+        "template": "// Archive JavaScript\n        function getArchive(hours)\n        { \n            $('#archiveCardId').show();\n\n//            if (hours > 2) messageDialog('Info', 'Wait', 'Getting Archive Data');\n            $('#archive2hrButton').attr(\"disabled\", true); \n            $('#archive4hrButton').attr(\"disabled\", true); \n            $('#archive8hrButton').attr(\"disabled\", true); \n            $('#archive24hrButton').attr(\"disabled\", true); \n            $('#archive72hrButton').attr(\"disabled\", true); \n            $('#archive168hrButton').attr(\"disabled\", true); \n            $('#archive2hrButton').css('color', 'var(--color5)'); \n            $('#archive2hrButton').css('background-color', 'var(--color1)'); \n            $('#archive4hrButton').css('color', 'var(--color5)'); \n            $('#archive4hrButton').css('background-color', 'var(--color1)'); \n            $('#archive8hrButton').css('color', 'var(--color5)'); \n            $('#archive8hrButton').css('background-color', 'var(--color1)'); \n            $('#archive24hrButton').css('color', 'var(--color5)'); \n            $('#archive24hrButton').css('background-color', 'var(--color1)'); \n            $('#archive72hrButton').css('color', 'var(--color5)'); \n            $('#archive72hrButton').css('background-color', 'var(--color1)'); \n            $('#archive168hrButton').css('color', 'var(--color5)'); \n            $('#archive168hrButton').css('background-color', 'var(--color1)'); \n            switch(hours)\n            {\n                case 2:\n                    $('#archive2hrButton').css('color', 'var(--color1)'); \n                    $('#archive2hrButton').css('background-color', 'var(--color5)'); \n                    break;\n                case 4:\n                    $('#archive4hrButton').css('color', 'var(--color1)'); \n                    $('#archive4hrButton').css('background-color', 'var(--color5)'); \n                    break;\n                case 8:\n                    $('#archive8hrButton').css('color', 'var(--color1)'); \n                    $('#archive8hrButton').css('background-color', 'var(--color5)'); \n                    break;\n                case 24:\n                    $('#archive24hrButton').css('color', 'var(--color1)'); \n                    $('#archive24hrButton').css('background-color', 'var(--color5)'); \n                    break;\n                case 72:\n                    $('#archive72hrButton').css('color', 'var(--color1)'); \n                    $('#archive72hrButton').css('background-color', 'var(--color5)'); \n                    break;\n                case 168:\n                    $('#archive168hrButton').css('color', 'var(--color1)'); \n                    $('#archive168hrButton').css('background-color', 'var(--color5)'); \n                    break;\n                default:\n                // code block\n            }\n\n            archiveRequestList = [];\n            archiveList = [];\n            var stopDate = new Date().getTime();\n            var startDate = stopDate - hours * 3600000;\n            archiveRequestList[0] = \n            {\n                deviceType : restfulDevice.deviceType,\n                name : restfulDevice.name, \n                attr : ['power','powerAvg','dutyFactor'],\n                startDate: startDate, \n                stopDate: stopDate,\n            };\n            getArchiveValues();\n\n        }\n        function getArchiveValues()\n        {\n            var actionMsg = \n                {\n                    device      : archiveRequestList[0]\n                };\n            sendActionMsg('readDatabase','readDatabase', actionMsg);\n            archiveRequestList.shift();\n            return;\n        }\n        function putArchiveValues(data)\n        {\n            archiveList.push(data);\n            if (archiveRequestList.length > 0)\n            {\n                getArchiveValues();\n            }\n            else\n            {\n                plotArchive();\n            }\n        }\n\n        function plotArchive()\n        {\n//            $( \"#messageDialog\" ).dialog( \"close\" );\n            var layout =\n            {\n                showlegend  : true,\n                legend      : { x: 0, y: 1.15},\n                height      : '500',\n                width       : '',\n                xaxis       :\n                {\n//                    title: 'Hours since ' + new Date(archiveList[0].device.stopDate).toLocaleString(),\n                    type: 'date'\n                },\n                yaxis:\n                {\n                    title           : 'Power (W)',\n                    titlefont       : {color: '#557a95'},\n                    tickfont        : {color: '#557a95'},\n                    gridcolor       : '#beceda',\n                    zerolinecolor   : '#beceda',\n                    linecolor       : '#beceda',\n                    rangemode       : 'tozero'\n                },\n                yaxis2:\n                {\n                    title           : 'Duty Factor (%)',\n                    titlefont       : {color: '#f2a31f'},\n                    tickfont        : {color: '#f2a31f'},\n                    gridcolor       : '#f2a31f',\n                    zerolinecolor   : '#f2a31f',\n                    linecolor       : '#f2a31f',\n                    overlaying: 'y',\n                    side: 'right',\n                    range: [0, 100]\n                },\n                margin: \n                    {\n                        t: 30, //top margin\n    //                    l: 0, //left margin\n    //                    r: 0, //right margin\n    //                    b: 20 //bottom margin\n                    },\n            };\n            var trace1 = \n            {\n                x: [],\n                y: [],\n                name: 'Power',\n                yaxis: 'y1',\n                type: 'scatter',\n                mode: 'lines',\n                line: {color: 'blue'}\n            };\n            var trace2 = \n            {\n                x: [],\n                y: [],\n                name: 'Avg Power',\n                yaxis: 'y1',\n                type: 'scatter',\n                mode: 'lines',\n                line: {color: 'red'}\n            };\n            var trace3 = \n            {\n                x: [],\n                y: [],\n                name: 'Duty Factor',\n                yaxis: 'y2',\n                type: 'scatter',\n                mode: 'lines',\n                line: {color: 'orange'}\n            };\n            for (var ii = 0; ii < archiveList[0].trace.length; ++ii)\n            {\n//                var x = (archiveList[0].trace[ii].timeStamp - archiveList[0].device.stopDate) / 3600000.0;\n                var x = archiveList[0].trace[ii].timeStamp;\n                trace1.x[ii] = x;\n                trace1.y[ii] = archiveList[0].trace[ii][archiveList[0].device.attr[0]] ;\n                trace2.x[ii] = x;\n                trace2.y[ii] = archiveList[0].trace[ii][archiveList[0].device.attr[1]];\n                trace3.x[ii] = x;\n                trace3.y[ii] = archiveList[0].trace[ii][archiveList[0].device.attr[2]];\n             }\n\n\n            Plotly.newPlot('archiveChart', [trace1,trace2, trace3], layout);\n            $('#archive2hrButton').attr(\"disabled\", false); \n            $('#archive4hrButton').attr(\"disabled\", false); \n            $('#archive8hrButton').attr(\"disabled\", false); \n            $('#archive24hrButton').attr(\"disabled\", false); \n            $('#archive72hrButton').attr(\"disabled\", false); \n            $('#archive168hrButton').attr(\"disabled\", false); \n        }\n",
         "output": "str",
         "x": 630,
         "y": 500,
